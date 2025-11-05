@@ -1,7 +1,18 @@
-# Imagen oficial de Bitnami TestLink
-FROM bitnami/testlink:latest
+FROM php:8.1-apache
 
-# Credenciales iniciales (puedes cambiarlas luego dentro de la app)
-ENV TESTLINK_USERNAME=admin
-ENV TESTLINK_PASSWORD=admin123
-ENV TESTLINK_EMAIL=admin@example.com
+# Instalar dependencias necesarias
+RUN apt-get update && apt-get install -y \
+    git unzip libpng-dev libjpeg-dev libfreetype6-dev libxml2-dev && \
+    docker-php-ext-install mysqli gd && \
+    docker-php-ext-enable mysqli
+
+# Descargar TestLink desde GitHub
+RUN git clone https://github.com/TestLinkOpenSourceTRMS/testlink-code.git /var/www/html/testlink
+
+# Ajustar permisos
+RUN chown -R www-data:www-data /var/www/html/testlink
+
+# Establecer el directorio de trabajo
+WORKDIR /var/www/html/testlink
+
+EXPOSE 80

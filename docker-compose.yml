@@ -1,0 +1,13 @@
+services:
+  testlink:
+    build: .
+    ports:
+      - "8080:80"
+    environment:
+      DB_TYPE: mysql
+      DB_HOST: gondola.proxy.rlwy.net
+      DB_NAME: railway
+      DB_USER: root
+      DB_PASS: UmUmeuPmmsnNbAKBYwtSFqQZVqQinRIX
+      DB_PORT: 54627
+    restart: always
