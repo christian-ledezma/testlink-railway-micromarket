@@ -1,9 +1,7 @@
 [build]
 builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
 
-[variables]
-TESTLINK_DATABASE_HOST = "mysql.railway.internal"
-TESTLINK_DATABASE_PORT_NUMBER = "3306"
-TESTLINK_DATABASE_USER = "root"
-TESTLINK_DATABASE_PASSWORD = "UmUmeuPmmsnNbAKBYwtSFqQZVqQinRIX"
-TESTLINK_DATABASE_NAME = "railway"
+[deploy]
+startCommand = "apache2-foreground"
+restartPolicyType = "always"

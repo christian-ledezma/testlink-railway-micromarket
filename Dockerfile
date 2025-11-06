@@ -9,6 +9,11 @@ RUN apt-get update && apt-get install -y \
 # Descargar TestLink desde GitHub
 RUN git clone https://github.com/TestLinkOpenSourceTRMS/testlink-code.git /var/www/html/testlink
 
+# Crear directorios requeridos por TestLink
+RUN mkdir -p /var/testlink/logs && \
+    mkdir -p /var/testlink/upload_area && \
+    chown -R www-data:www-data /var/testlink
+
 # Cambiar el DocumentRoot de Apache a la carpeta de TestLink
 RUN echo '<VirtualHost *:80>\n\
     DocumentRoot /var/www/html/testlink\n\
