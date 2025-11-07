@@ -35,7 +35,7 @@ set -e\n\
 \n\
 # Esperar a que MySQL esté listo\n\
 echo "Esperando conexión a MySQL..."\n\
-until mysql -h"${DB_HOST}" -P"${DB_PORT}" -u"${DB_USER}" -p"${DB_PASS}" "${DB_NAME}" -e "SELECT 1" > /dev/null 2>&1; do\n\
+until mysql -h"${DB_HOST}" -P"${DB_PORT}" -u"${DB_USER}" -p"${DB_PASS}" -e "SELECT 1" > /dev/null 2>&1; do\n\
   echo "MySQL no está listo, reintentando..."\n\
   sleep 3\n\
 done\n\
@@ -44,6 +44,8 @@ echo "Conexión a MySQL exitosa!"\n\
 # Crear archivo de configuración con variables de entorno\n\
 CONFIG_FILE="/var/www/html/testlink/config_db.inc.php"\n\
 echo "Generando archivo de configuración..."\n\
+\n\
+# SIEMPRE usar las variables de entorno (ignorar archivo existente)\n\
 cat > "$CONFIG_FILE" <<EOF\n\
 <?php\n\
 define("DB_TYPE", "mysql");\n\
@@ -55,6 +57,13 @@ define("DB_PASS", "${DB_PASS}");\n\
 define("DB_TABLE_PREFIX", "tl_");\n\
 ?>\n\
 EOF\n\
+chown www-data:www-data "$CONFIG_FILE"\n\
+chmod 644 "$CONFIG_FILE"\n\
+echo "Archivo de configuración creado con:"\n\
+echo "  DB_HOST=${DB_HOST}"\n\
+echo "  DB_NAME=${DB_NAME}"\n\
+echo "  DB_USER=${DB_USER}"\n\
+\n\
 chown www-data:www-data "$CONFIG_FILE"\n\
 chmod 644 "$CONFIG_FILE"\n\
 echo "Archivo de configuración creado."\n\
