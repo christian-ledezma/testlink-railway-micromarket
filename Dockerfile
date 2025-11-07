@@ -33,10 +33,53 @@ RUN a2enmod rewrite
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
+# Valores por defecto si no están configuradas las variables\n\
+DB_HOST="${DB_HOST:-mysql.railway.internal}"\n\
+DB_PORT="${DB_PORT:-3306}"\n\
+DB_NAME="${DB_NAME:-railway}"\n\
+DB_USER="${DB_USER:-root}"\n\
+DB_PASS="${DB_PASS:-}"\n\
+\n\
+echo "================================="\n\
+echo "Configuración de conexión:"\n\
+echo "  DB_HOST=${DB_HOST}"\n\
+echo "  DB_PORT=${DB_PORT}"\n\
+echo "  DB_NAME=${DB_NAME}"\n\
+echo "  DB_USER=${DB_USER}"\n\
+echo "  DB_PASS=[OCULTO]"\n\
+echo "================================="\n\
+\n\
+# Verificar que las variables críticas estén configuradas\n\
+if [ -z "$DB_PASS" ]; then\n\
+  echo "ERROR: DB_PASS no está configurada!"\n\
+  echo "Configura las variables de entorno en Railway."\n\
+  exit 1\n\
+fi\n\
+\n\
+# Test de conectividad básico\n\
+echo "Probando resolución de DNS para ${DB_HOST}..."\n\
+if command -v ping >/dev/null 2>&1; then\n\
+  ping -c 1 "${DB_HOST}" 2>&1 || echo "Ping falló (puede ser normal si ICMP está bloqueado)"\n\
+fi\n\
+\n\
 # Esperar a que MySQL esté listo\n\
 echo "Esperando conexión a MySQL..."\n\
-until mysql -h"${DB_HOST}" -P"${DB_PORT}" -u"${DB_USER}" -p"${DB_PASS}" -e "SELECT 1" > /dev/null 2>&1; do\n\
-  echo "MySQL no está listo, reintentando..."\n\
+RETRY_COUNT=0\n\
+MAX_RETRIES=30\n\
+until mysql -h"${DB_HOST}" -P"${DB_PORT}" -u"${DB_USER}" -p"${DB_PASS}" -e "SELECT 1" 2>&1; do\n\
+  MYSQL_ERROR=$?\n\
+  RETRY_COUNT=$((RETRY_COUNT+1))\n\
+  if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then\n\
+    echo "ERROR: No se pudo conectar a MySQL después de $MAX_RETRIES intentos"\n\
+    echo "Último código de error: $MYSQL_ERROR"\n\
+    echo "Verifica:"\n\
+    echo "  1. Que el servicio MySQL esté corriendo"\n\
+    echo "  2. Que las credenciales sean correctas"\n\
+    echo "  3. Que ambos servicios estén en el mismo proyecto"\n\
+    echo "  4. Que Private Networking esté habilitado en MySQL"\n\
+    exit 1\n\
+  fi\n\
+  echo "MySQL no está listo, reintentando... ($RETRY_COUNT/$MAX_RETRIES)"\n\
   sleep 3\n\
 done\n\
 echo "Conexión a MySQL exitosa!"\n\
